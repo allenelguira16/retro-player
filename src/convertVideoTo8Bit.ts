@@ -128,18 +128,18 @@ export async function convertVideoTo8Bit(inputVideo: string) {
   return videoUrl;
 }
 
-function loadImage(imageBlob: Blob) {
-  return new Promise<HTMLImageElement>((resolve) => {
-    const image = new Image();
-    image.src = URL.createObjectURL(imageBlob);
+// function loadImage(imageBlob: Blob) {
+//   return new Promise<HTMLImageElement>((resolve) => {
+//     const image = new Image();
+//     image.src = URL.createObjectURL(imageBlob);
 
-    // Wait for the image to load
-    image.onload = async () => {
-      URL.revokeObjectURL(image.src);
-      resolve(image);
-    };
-  });
-}
+//     // Wait for the image to load
+//     image.onload = async () => {
+//       URL.revokeObjectURL(image.src);
+//       resolve(image);
+//     };
+//   });
+// }
 
 async function blobToUInt8Array(blob: Blob) {
   const buffer = await new Response(blob).arrayBuffer();

@@ -1,8 +1,5 @@
 import { ChangeEventHandler, useState } from "react";
 import { Player } from "./Player";
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { getCharacter } from "./getCharacter";
-import { convertVideoTo8Bit } from "./convertVideoTo8Bit";
 
 function App() {
   // const [isLoading, setIsLoading] = useState(false);
