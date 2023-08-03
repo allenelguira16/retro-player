@@ -56,10 +56,10 @@ export function usePlayer(renderType: 'ascii' | '8bit', {
           ctx.fillStyle = `rgb(${r},${g},${b})`;
           if (renderType === '8bit') {
             ctx.fillRect(x, y, cellSize, cellSize);
-            return;
+          } else {
+            const text = getCharacter(r, g, b, 4);
+            ctx.fillText(text, x, y, cellSize / 1.2);
           }
-          const text = getCharacter(r, g, b, 4);
-          ctx.fillText(text, x, y, cellSize / 1.2);
         }
       }
 

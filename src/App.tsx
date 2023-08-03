@@ -37,8 +37,6 @@ function App() {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <input type="file" accept=".mp4" onChange={handleInput} />
         <select onChange={(event) => {
-          console.log('currentTarget', event.currentTarget.value);
-          console.log('target', event.target.value);
           setRenderType(event.currentTarget.value as 'ascii' | '8bit');
         }} value={renderType}>
           <option value="ascii">ascii</option>
