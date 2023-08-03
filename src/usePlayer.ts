@@ -13,7 +13,7 @@ export function usePlayer(renderType: 'ascii' | '8bit', {
   mainVideoRef,
 }: UsePlayerProps) {
   useEffect(() => {
-    const cellSize = 5;
+    const cellSize = renderType === 'ascii' ? 5 : 10;
     const canvas = canvasRef.current;
     const mainVideo = mainVideoRef.current;
     const frameVideo = frameVideoRef.current;
