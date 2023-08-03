@@ -9,16 +9,17 @@ import { usePlayer } from "./usePlayer";
 
 interface PlayerProps {
   url?: string;
+  renderType: 'ascii' | '8bit',
 }
 
-export function Player({ url }: PlayerProps) {
+export function Player({ url, renderType }: PlayerProps) {
   const [isPaused, setIsPaused] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const frameVideoRef = useRef<HTMLVideoElement>(null);
 
-  usePlayer({
+  usePlayer(renderType, {
     canvasRef,
     frameVideoRef,
     mainVideoRef,

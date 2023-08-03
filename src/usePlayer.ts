@@ -7,7 +7,7 @@ type UsePlayerProps = {
   frameVideoRef: RefObject<HTMLVideoElement>;
 };
 
-export function usePlayer({
+export function usePlayer(renderType: 'ascii' | '8bit', {
   canvasRef,
   frameVideoRef,
   mainVideoRef,
@@ -54,9 +54,12 @@ export function usePlayer({
           const g = pixel[pos + 1];
           const b = pixel[pos + 2];
           ctx.fillStyle = `rgb(${r},${g},${b})`;
+          if (renderType === '8bit') {
+            ctx.fillRect(x, y, cellSize, cellSize);
+            return;
+          }
           const text = getCharacter(r, g, b, 4);
           ctx.fillText(text, x, y, cellSize / 1.2);
-          // ctx.fillRect(x, y, cellSize, cellSize);
         }
       }
 

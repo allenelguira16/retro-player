@@ -3,6 +3,7 @@ import { Player } from "./Player";
 
 function App() {
   // const [isLoading, setIsLoading] = useState(false);
+  const [renderType, setRenderType] = useState<'ascii' | '8bit'>('ascii');
   const [videoPath, setVideoPath] = useState<string>();
   // const [isPlayerOpen, setPlayerOpen] = useState(false);
 
@@ -33,12 +34,18 @@ function App() {
   // if (isLoading) return <>Video Is Loading</>;
   return (
     <>
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <input type="file" accept=".mp4" onChange={handleInput} />
+        <select onChange={(event) => {
+          setRenderType(event.currentTarget.value);
+        }} value={renderType}>
+          <option value="ascii">ascii</option>
+          <option value="8bit">8-bit</option>
+        </select>
       </div>
       {/* {videoPath && <video src={videoPath} controls />} */}
       {/* <canvas></canvas> */}
-      {videoPath && <Player url={videoPath} />}
+      {videoPath && <Player url={videoPath} renderType={renderType} />}
     </>
   );
 }
