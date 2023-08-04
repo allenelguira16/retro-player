@@ -7,13 +7,12 @@ type UsePlayerProps = {
   frameVideoRef: RefObject<HTMLVideoElement>;
 };
 
-export function usePlayer(renderType: 'ascii' | '8bit', {
-  canvasRef,
-  frameVideoRef,
-  mainVideoRef,
-}: UsePlayerProps) {
+export function usePlayer(
+  renderType: "ascii" | "8bit",
+  { canvasRef, frameVideoRef, mainVideoRef }: UsePlayerProps
+) {
   useEffect(() => {
-    const cellSize = renderType === 'ascii' ? 5 : 10;
+    const cellSize = renderType === "ascii" ? 4 : 4;
     const canvas = canvasRef.current;
     const mainVideo = mainVideoRef.current;
     const frameVideo = frameVideoRef.current;
@@ -28,7 +27,7 @@ export function usePlayer(renderType: 'ascii' | '8bit', {
     const drawFrame = () => {
       if (!frameVideo.videoWidth || !frameVideo.videoHeight) return;
       const aspectRatio = frameVideo.videoWidth / frameVideo.videoHeight;
-      const width = 1080;
+      const width = 720;
       const height = width / aspectRatio;
 
       canvas.width = width;
@@ -53,12 +52,15 @@ export function usePlayer(renderType: 'ascii' | '8bit', {
           const r = pixel[pos];
           const g = pixel[pos + 1];
           const b = pixel[pos + 2];
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
-          if (renderType === '8bit') {
+          if (renderType === "8bit") {
+            ctx.fillStyle = `rgba(${r},${g},${b}, 1)`;
             ctx.fillRect(x, y, cellSize, cellSize);
           } else {
-            const text = getCharacter(r, g, b, 4);
-            ctx.fillText(text, x, y, cellSize / 1.2);
+            ctx.fillStyle = `rgba(${r},${g},${b}, 0.4)`;
+            ctx.fillRect(x, y, cellSize, cellSize);
+            ctx.fillStyle = `rgba(${r},${g},${b}, 0.8)`;
+            const text = getCharacter(r, g, b, 2);
+            ctx.fillText(text, x, y, cellSize);
           }
         }
       }
