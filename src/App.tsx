@@ -1,5 +1,6 @@
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useEffect, useState } from "react";
 import { Player } from "./Player";
+import * as THREE from "three";
 
 function App() {
   // const [isLoading, setIsLoading] = useState(false);
@@ -34,20 +35,20 @@ function App() {
   // if (isLoading) return <>Video Is Loading</>;
   return (
     <>
-      {!videoPath && (
-        <div
-          style={{
-            display: "grid",
-            placeItems: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
+      <div
+        style={{
+          display: "grid",
+          placeItems: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <div>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              width: "50%",
+              // width: "50%",
             }}
           >
             <input type="file" accept=".mp4" onChange={handleInput} />
@@ -61,9 +62,9 @@ function App() {
               <option value="8bit">8-bit</option>
             </select>
           </div>
+          {videoPath && <Player url={videoPath} renderType={renderType} />}
         </div>
-      )}
-      {videoPath && <Player url={videoPath} renderType={renderType} />}
+      </div>
     </>
   );
 }

@@ -1,9 +1,30 @@
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 import { getCharacter } from "./getCharacter";
 
 export async function convertVideoTo8Bit(inputVideo: string) {
-  const ffmpeg = createFFmpeg({ log: true });
-  await ffmpeg.load();
+  const baseURL = "https://unpkg.com/@ffmpeg/core-mt@0.12.1/dist/umd";
+  const ffmpeg = new FFmpeg();
+  ffmpeg.on("log", (response: unknown) => {
+    // if (!message.current) return;
+
+    // messageRef.current.innerHTML = message;
+    if (typeof response === "object" && response && "message" in response) {
+      console.log(response.message);
+    }
+  });
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    workerURL: await toBlobURL(
+      `https://unpkg.com/@ffmpeg/core-mt@0.12.1/dist/esm/ffmpeg-core.worker.js`,
+      "text/javascript"
+    ),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    thread: true,
+  });
+  // console.log("loaded");
   const video = document.createElement("video");
   video.src = inputVideo;
   video.preload = "metadata";
@@ -12,32 +33,30 @@ export async function convertVideoTo8Bit(inputVideo: string) {
   const frameFileName = "frame-%d.png";
   const imageFileName = "output-%d.png";
   const audioFileName = "audio.mp3";
-  const fps = "24";
+  const fps = "18";
 
   await delay(200);
 
-  const width = 710;
+  const width = 320;
   let height = Math.floor(video.videoHeight * (width / video.videoWidth));
   if (height % 2 !== 0) height = height - 1;
 
   const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw "ctx is empty";
-  ffmpeg.FS("writeFile", videoFileName, await fetchFile(inputVideo));
-
-  await Promise.all([
-    // Convert video to mp3
-  ]);
-  await ffmpeg.run(
+  console.log("Downloading video");
+  ffmpeg.writeFile(videoFileName, await fetchFile(inputVideo));
+  console.log("Extracting audio");
+  await ffmpeg.exec([
     "-i",
     videoFileName,
     "-vn",
     "-acodec",
     "libmp3lame",
-    audioFileName
-  );
-  // Resize video
-  await ffmpeg.run(
+    audioFileName,
+  ]);
+  console.log("Extracting frames");
+  await ffmpeg.exec([
     "-i",
     videoFileName,
     "-r",
@@ -46,86 +65,87 @@ export async function convertVideoTo8Bit(inputVideo: string) {
     `scale=${width}:${height}`,
     "-threads",
     "8",
-    frameFileName
-  );
+    frameFileName,
+  ]);
 
-  const frames = ffmpeg
-    .FS("readdir", ".")
-    .filter((file) => file.startsWith("frame-"));
+  return "";
 
-  // Use Web Workers to parallelize the image processing
-  const numWorkers = 8;
-  const chunkSize = Math.ceil(frames.length / numWorkers);
+  // const frames = (await ffmpeg.listDir("."))
+  //   .filter((file) => file.name.startsWith("frame-"))
+  //   .map(({ name }) => name);
 
-  const processFrames = async (start: number, end: number) => {
-    for (let i = start; i < end; i++) {
-      const imageBlob = new Blob([ffmpeg.FS("readFile", frames[i])], {
-        type: "image/png",
-      });
-      const image = await createImageBitmap(imageBlob);
-      ctx.drawImage(image, 0, 0, width, height);
+  // // Use Web Workers to parallelize the image processing
+  // const numWorkers = 8;
+  // const chunkSize = Math.ceil(frames.length / numWorkers);
 
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const { data: pixel } = imageData;
-      ctx.clearRect(0, 0, width, height);
+  // const processFrames = async (start: number, end: number) => {
+  //   for (let i = start; i < end; i++) {
+  //     const imageBlob = new Blob([await ffmpeg.readFile(frames[i])], {
+  //       type: "image/png",
+  //     });
+  //     const image = await createImageBitmap(imageBlob);
+  //     ctx.drawImage(image, 0, 0, width, height);
 
-      for (let y = 0; y < height; y += 4) {
-        for (let x = 0; x < width; x += 4) {
-          const posX = x * 4;
-          const posY = y * 4;
-          const pos = posY * width + posX;
+  //     const imageData = ctx.getImageData(0, 0, width, height);
+  //     const { data: pixel } = imageData;
+  //     ctx.clearRect(0, 0, width, height);
 
-          const r = pixel[pos];
-          const g = pixel[pos + 1];
-          const b = pixel[pos + 2];
-          ctx.fillStyle = `rgb(${r},${g},${b})`;
-          const text = getCharacter(r, g, b, 4);
-          ctx.fillText(text, x, y);
-        }
-      }
+  //     for (let y = 0; y < height; y += 4) {
+  //       for (let x = 0; x < width; x += 4) {
+  //         const posX = x * 4;
+  //         const posY = y * 4;
+  //         const pos = posY * width + posX;
 
-      ffmpeg.FS(
-        "writeFile",
-        `output-${i}.png`,
-        await blobToUInt8Array(await canvas.convertToBlob())
-      );
-    }
-  };
+  //         const r = pixel[pos];
+  //         const g = pixel[pos + 1];
+  //         const b = pixel[pos + 2];
+  //         ctx.fillStyle = `rgb(${r},${g},${b})`;
+  //         const text = getCharacter(r, g, b, 4);
+  //         ctx.fillText(text, x, y);
+  //       }
+  //     }
 
-  const workers = [];
-  for (let i = 0; i < numWorkers; i++) {
-    const start = i * chunkSize;
-    const end = Math.min((i + 1) * chunkSize, frames.length);
-    workers.push(processFrames(start, end));
-  }
+  //     await ffmpeg.writeFile(
+  //       `output-${i}.png`,
+  //       await blobToUInt8Array(await canvas.convertToBlob())
+  //     );
+  //   }
+  // };
 
-  await Promise.all(workers);
+  // const workers = [];
+  // for (let i = 0; i < numWorkers; i++) {
+  //   const start = i * chunkSize;
+  //   const end = Math.min((i + 1) * chunkSize, frames.length);
+  //   workers.push(processFrames(start, end));
+  // }
 
-  // Merge images to create the final video
-  await ffmpeg.run(
-    "-framerate",
-    fps,
-    "-i",
-    imageFileName,
-    "-i",
-    audioFileName,
-    "-c:v",
-    "libx264",
-    "-r",
-    fps,
-    "-qp",
-    "0",
-    "-threads",
-    "8",
-    "output.mp4"
-  );
+  // await Promise.all(workers);
 
-  const videoBlob = new Blob([ffmpeg.FS("readFile", "output.mp4")], {
-    type: "video/mp4",
-  });
-  const videoUrl = URL.createObjectURL(videoBlob);
+  // // Merge images to create the final video
+  // await ffmpeg.exec([
+  //   "-framerate",
+  //   fps,
+  //   "-i",
+  //   imageFileName,
+  //   "-i",
+  //   audioFileName,
+  //   "-c:v",
+  //   "libx264",
+  //   "-r",
+  //   fps,
+  //   "-qp",
+  //   "0",
+  //   "-threads",
+  //   "8",
+  //   "output.mp4",
+  // ]);
 
-  return videoUrl;
+  // const videoBlob = new Blob([await ffmpeg.readFile("output.mp4")], {
+  //   type: "video/mp4",
+  // });
+  // const videoUrl = URL.createObjectURL(videoBlob);
+
+  // return videoUrl;
 }
 
 // function loadImage(imageBlob: Blob) {

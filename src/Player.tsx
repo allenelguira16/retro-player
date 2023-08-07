@@ -13,20 +13,25 @@ interface PlayerProps {
 }
 
 export function Player({ url, renderType }: PlayerProps) {
-  const [isPaused, setIsPaused] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const frameVideoRef = useRef<HTMLVideoElement>(null);
 
-  usePlayer(renderType, {
+  const { play, pause, isPaused } = usePlayer(renderType, {
     canvasRef,
     frameVideoRef,
     mainVideoRef,
   });
 
   useEffect(() => {
+    document.addEventListener("fullscreenchange", async (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      // if (!isFullscreen) setIsFullscreen(false);
+      // video.classList.toggle('video-fullscreen', document.fullscreenElement != null);
+    });
     // // const applyScaling = (scaledWrapper, scaledContent) => {
     // // };
     // const scaledWrapper = document.body;
@@ -40,7 +45,7 @@ export function Player({ url, renderType }: PlayerProps) {
     // scaledContent.style.transform = `scale(${scaleAmtX}, ${scaleAmtY})`;
     // // scaledContent.style.width = `${scaleAmtX * 100}%`;
     // // scaledContent.style.height = `${scaleAmtY * 100}%`;
-  });
+  }, []);
 
   useEffect(() => {
     setInterval(() => {
@@ -49,21 +54,8 @@ export function Player({ url, renderType }: PlayerProps) {
   }, []);
 
   const handlePlay = async () => {
-    const mainVideo = mainVideoRef.current;
-    const frameVideo = frameVideoRef.current;
-
-    if (!frameVideo || !mainVideo) return;
-
-    if (isPaused) {
-      await frameVideo.play();
-      await mainVideo.play();
-      console.log("main started");
-    } else {
-      frameVideo.pause();
-      mainVideo.pause();
-    }
-
-    setIsPaused(!isPaused);
+    if (isPaused) play();
+    else pause();
   };
 
   useEffect(() => {
@@ -88,19 +80,6 @@ export function Player({ url, renderType }: PlayerProps) {
   }, []);
 
   const handleFullscreen = async () => {
-    // const mainVideo = mainVideoRef.current;
-    // const frameVideo = frameVideoRef.current;
-
-    // if (!frameVideo || !mainVideo) return;
-
-    // if (isPaused) {
-    //   await frameVideo.play();
-    //   await mainVideo.play();
-    //   console.log("main started");
-    // } else {
-    //   frameVideo.pause();
-    //   mainVideo.pause();
-    // }
     const playerElement = document.querySelector<HTMLDivElement>("body");
     if (!playerElement) return;
     // playerElement.style.display = "flex";
@@ -151,14 +130,7 @@ export function Player({ url, renderType }: PlayerProps) {
   };
 
   return (
-    <div
-      style={{
-        display: "grid",
-        placeItems: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
+    <>
       <video
         id="video-frame"
         src={url}
@@ -166,20 +138,6 @@ export function Player({ url, renderType }: PlayerProps) {
         style={{ display: "none" }}
         preload="metadata"
         ref={frameVideoRef}
-      />
-      <video
-        id="main"
-        src={url}
-        style={{
-          // display: "inline",
-          display: "none",
-          // position: "absolute",
-          // zIndex: 1,
-          // opacity: "0.4",
-          // filter: "blur(10px)",
-        }}
-        preload="metadata"
-        ref={mainVideoRef}
       />
       <div
         style={{
@@ -191,6 +149,21 @@ export function Player({ url, renderType }: PlayerProps) {
         onMouseLeave={() => handleControlDisplay(false)}
       >
         <div id="player" style={{ height: "inherit", width: "inherit" }}>
+          <video
+            id="main"
+            src={url}
+            style={{
+              // display: "inline",
+              display: "none",
+              // position: "absolute",
+              // zIndex: 1,
+              // opacity: "0.4",
+              // filter: "blur(10px)",
+              width: "100%",
+            }}
+            preload="metadata"
+            ref={mainVideoRef}
+          />
           <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
         </div>
         <div
@@ -207,7 +180,7 @@ export function Player({ url, renderType }: PlayerProps) {
             background: "rgba(0,0,0,0.8)",
           }}
         >
-          <button onClick={handlePlay}>Play</button>
+          <button onClick={handlePlay}>{!isPaused ? "Play" : "Pause"}</button>
           <input
             type="range"
             style={{ flex: 1 }}
@@ -224,6 +197,6 @@ export function Player({ url, renderType }: PlayerProps) {
           <button onClick={handleFullscreen}>Fullscreen</button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
