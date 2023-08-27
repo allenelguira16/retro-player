@@ -1,18 +1,16 @@
-import { getCharacter } from ".";
+import { getCharacter } from "./getCharacter";
 
 export function draw(renderType: "ascii" | "8bit") {
-  const cellSize = renderType === "ascii" ? 4 : 5;
+  const cellSize = 5;
   const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
   const mainVideo = document.querySelector<HTMLVideoElement>("#main");
   const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
+  const ctx = canvas?.getContext("2d", { willReadFrequently: true });
 
-  if (!canvas || !mainVideo || !frameVideo) return;
-
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return;
+  if (!canvas || !mainVideo || !frameVideo || !ctx) return;
 
   const aspectRatio = frameVideo.videoWidth / frameVideo.videoHeight;
-  const width = 720;
+  const width = 1080;
   const height = width / aspectRatio;
 
   canvas.width = width;
@@ -21,14 +19,15 @@ export function draw(renderType: "ascii" | "8bit") {
   mainVideo.width = width;
   mainVideo.height = height;
 
+  ctx.globalCompositeOperation = "lighten";
   ctx.drawImage(frameVideo, 0, 0, width, height);
 
   const imageData = ctx.getImageData(0, 0, width, height);
   const { data: pixel } = imageData;
 
   ctx.clearRect(0, 0, width, height);
-  ctx.globalCompositeOperation = "lighten";
   ctx.font = `${cellSize}px PressStart2P`;
+  ctx.imageSmoothingEnabled = true;
 
   for (let y = 0; y < height; y += cellSize) {
     let row = "";
@@ -42,28 +41,24 @@ export function draw(renderType: "ascii" | "8bit") {
       const r = pixel[pos] || 0;
       const g = pixel[pos + 1] || 0;
       const b = pixel[pos + 2] || 0;
-      if (renderType === "8bit") {
-        ctx.fillStyle = `rgba(${r},${g},${b}, 1)`;
-        ctx.fillRect(x, y, cellSize / 1.01, cellSize / 1.01);
-      } else {
-        colors.push([r, g, b]);
-        row += getCharacter(r, g, b, 2);
-      }
+      colors.push([r, g, b]);
+      row += getCharacter(r, g, b, 2);
     }
 
-    if (renderType === "ascii") {
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      colors.forEach(([r, g, b], x) =>
-        gradient.addColorStop(x / colors.length, `rgba(${r},${g},${b}, 0.4)`)
-      );
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, y, width, cellSize / 1.5);
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
 
+    if (renderType === "ascii") {
       colors.forEach(([r, g, b], x) =>
         gradient.addColorStop(x / colors.length, `rgba(${r},${g},${b}, 1)`)
       );
       ctx.fillStyle = gradient;
       ctx.fillText(row, 0, y);
+    } else {
+      colors.forEach(([r, g, b], x) =>
+        gradient.addColorStop(x / colors.length, `rgba(${r},${g},${b}, 1)`)
+      );
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, y, width, cellSize);
     }
   }
 }

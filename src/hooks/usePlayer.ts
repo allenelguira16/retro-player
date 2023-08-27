@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { draw } from "../utils";
+import { draw } from "@utils";
 
 export function usePlayer(renderType: "ascii" | "8bit") {
   const [isPaused, setIsPaused] = useState(true);
 
-  const drawFrame = async () => {
+  const drawFrame = useCallback(() => {
     draw(renderType);
+    console.log("draw");
 
     requestAnimationFrame(drawFrame);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  };
+  }, [renderType]);
 
   const play = useCallback(async () => {
     const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
@@ -21,8 +21,7 @@ export function usePlayer(renderType: "ascii" | "8bit") {
     await mainVideo.play();
     requestAnimationFrame(drawFrame);
     setIsPaused(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [drawFrame]);
 
   const pause = useCallback(() => {
     const mainVideo = document.querySelector<HTMLVideoElement>("#main");
@@ -33,7 +32,6 @@ export function usePlayer(renderType: "ascii" | "8bit") {
     frameVideo.pause();
     mainVideo.pause();
     setIsPaused(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -42,32 +40,36 @@ export function usePlayer(renderType: "ascii" | "8bit") {
 
     if (!frameVideo || !mainVideo) return;
 
-    const handleTimeUpdate = () => {
-      frameVideo.currentTime = mainVideo.currentTime + 0.2;
-    };
+    const handleTimeUpdate = () =>
+      (frameVideo.currentTime = mainVideo.currentTime + 0.4);
 
     mainVideo.addEventListener("timeupdate", handleTimeUpdate);
 
     return () => {
       mainVideo.removeEventListener("timeupdate", handleTimeUpdate);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    document
-      .querySelector<HTMLVideoElement>("#frame")
-      ?.addEventListener("loadedmetadata", () => {
-        draw(renderType);
-      });
+    const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
+    const onLoadedMetaData = () => draw(renderType);
+
+    frameVideo?.addEventListener("loadedmetadata", onLoadedMetaData);
+
+    return () => {
+      frameVideo?.removeEventListener("loadedmetadata", onLoadedMetaData);
+    };
   }, [renderType]);
 
   useEffect(() => {
-    document
-      .querySelector<HTMLVideoElement>("#frame")
-      ?.addEventListener("ended", () => {
-        setIsPaused(true);
-      });
+    const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
+    const handlePause = () => setIsPaused(true);
+
+    frameVideo?.addEventListener("ended", handlePause);
+
+    return () => {
+      frameVideo?.removeEventListener("ended", handlePause);
+    };
   }, []);
 
   return {

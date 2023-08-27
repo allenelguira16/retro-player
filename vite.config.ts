@@ -1,17 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import crossOriginIsolation from "vite-plugin-cross-origin-isolation";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), crossOriginIsolation()],
+  plugins: [react(), tsconfigPaths()],
   define: {
     global: {},
   },
   server: {
+    cors: true,
     headers: {
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Resource-Policy": "cross-origin",
     },
   },
 });

@@ -48,12 +48,17 @@ export function Controls({
   };
 
   useEffect(() => {
-    setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentTime(
         document.querySelector<HTMLVideoElement>("#main")?.currentTime || 0
       );
     }, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
+
   const endTime =
     document.querySelector<HTMLVideoElement>("#main")?.duration || 0;
 

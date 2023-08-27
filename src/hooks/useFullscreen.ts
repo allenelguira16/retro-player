@@ -4,12 +4,18 @@ export function useFullscreen() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    document.addEventListener("fullscreenchange", async (event) => {
+    const handleFullScreen = async (event: Event) => {
       event.stopPropagation();
       event.preventDefault();
 
       setIsFullscreen(!isFullscreen);
-    });
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreen);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullScreen);
+    };
   }, [isFullscreen]);
 
   const onFullscreen = async () => {
@@ -18,8 +24,6 @@ export function useFullscreen() {
 
     if (!isFullscreen) await playerElement.requestFullscreen();
     else await document.exitFullscreen();
-
-    // setIsFullscreen(!isFullscreen);
   };
 
   return [isFullscreen, onFullscreen] as const;

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useFullscreen, usePlayer } from "../hooks";
+import { useFullscreen, usePlayer } from "@hooks";
 import { Controls } from "./Controls";
 
 interface PlayerProps {

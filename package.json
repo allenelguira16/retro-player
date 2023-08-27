@@ -20,6 +20,7 @@
     "react-icons": "^4.10.1",
     "three": "^0.155.0",
     "vite-plugin-cross-origin-isolation": "^0.1.6",
+    "vite-tsconfig-paths": "^4.2.0",
     "whammy": "^0.0.1"
   },
   "devDependencies": {
