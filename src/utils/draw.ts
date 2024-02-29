@@ -1,7 +1,7 @@
 import { getCharacter } from "./getCharacter";
 
-export function draw(renderType: "ascii" | "8bit") {
-  const cellSize = 5;
+export function draw() {
+  const cellSize = 10;
   const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
   const mainVideo = document.querySelector<HTMLVideoElement>("#main");
   const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
@@ -30,8 +30,8 @@ export function draw(renderType: "ascii" | "8bit") {
   ctx.imageSmoothingEnabled = true;
 
   for (let y = 0; y < height; y += cellSize) {
-    let row = "";
-    const colors: [number, number, number][] = [];
+    const row: string[] = [];
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
 
     for (let x = 0; x < width; x += cellSize) {
       const posX = x * 4;
@@ -41,24 +41,12 @@ export function draw(renderType: "ascii" | "8bit") {
       const r = pixel[pos] || 0;
       const g = pixel[pos + 1] || 0;
       const b = pixel[pos + 2] || 0;
-      colors.push([r, g, b]);
-      row += getCharacter(r, g, b, 2);
+
+      gradient.addColorStop(x / width, `rgba(${r},${g},${b}, 1)`);
+      row.push(getCharacter(r, g, b, 1));
     }
 
-    const gradient = ctx.createLinearGradient(0, 0, width, 0);
-
-    if (renderType === "ascii") {
-      colors.forEach(([r, g, b], x) =>
-        gradient.addColorStop(x / colors.length, `rgba(${r},${g},${b}, 1)`)
-      );
-      ctx.fillStyle = gradient;
-      ctx.fillText(row, 0, y);
-    } else {
-      colors.forEach(([r, g, b], x) =>
-        gradient.addColorStop(x / colors.length, `rgba(${r},${g},${b}, 1)`)
-      );
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, y, width, cellSize);
-    }
+    ctx.fillStyle = gradient;
+    ctx.fillText(row.join(""), 0, y);
   }
 }

@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { draw } from "@utils";
 
-export function usePlayer(renderType: "ascii" | "8bit") {
+export function usePlayer() {
   const [isPaused, setIsPaused] = useState(true);
 
   const drawFrame = useCallback(() => {
-    draw(renderType);
+    draw();
     console.log("draw");
 
     requestAnimationFrame(drawFrame);
-  }, [renderType]);
+  }, []);
 
   const play = useCallback(async () => {
     const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
@@ -52,14 +52,14 @@ export function usePlayer(renderType: "ascii" | "8bit") {
 
   useEffect(() => {
     const frameVideo = document.querySelector<HTMLVideoElement>("#frame");
-    const onLoadedMetaData = () => draw(renderType);
+    const onLoadedMetaData = () => draw();
 
     frameVideo?.addEventListener("loadedmetadata", onLoadedMetaData);
 
     return () => {
       frameVideo?.removeEventListener("loadedmetadata", onLoadedMetaData);
     };
-  }, [renderType]);
+  }, []);
 
   useEffect(() => {
     const frameVideo = document.querySelector<HTMLVideoElement>("#frame");

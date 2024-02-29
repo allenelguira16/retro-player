@@ -2,7 +2,7 @@ import { ChangeEventHandler, useState } from "react";
 import { Player } from "./components/Player";
 
 function App() {
-  const [renderType, setRenderType] = useState<"ascii" | "8bit">("ascii");
+  // const [renderType, setRenderType] = useState<"ascii" | "8bit">("ascii");
   const [videoPath, setVideoPath] = useState<string | undefined>();
 
   const handleInput: ChangeEventHandler<HTMLInputElement> = async (event) => {
@@ -11,10 +11,10 @@ function App() {
     setVideoPath(URL.createObjectURL(file));
   };
 
-  const renderTypeOptions = [
-    { value: "ascii", label: "ASCII" },
-    { value: "8bit", label: "8-bit" },
-  ];
+  // const renderTypeOptions = [
+  //   { value: "ascii", label: "ASCII" },
+  //   { value: "8bit", label: "8-bit" },
+  // ];
 
   return (
     <div
@@ -29,7 +29,7 @@ function App() {
         {!videoPath && (
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <input type="file" accept=".mp4" onChange={handleInput} />
-            <select
+            {/* <select
               onChange={(event) =>
                 setRenderType(event.currentTarget.value as "ascii" | "8bit")
               }
@@ -40,10 +40,10 @@ function App() {
                   {option.label}
                 </option>
               ))}
-            </select>
+            </select> */}
           </div>
         )}
-        {videoPath && <Player url={videoPath} renderType={renderType} />}
+        {videoPath && <Player url={videoPath} />}
       </div>
     </div>
   );

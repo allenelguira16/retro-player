@@ -4,13 +4,12 @@ import { Controls } from "./Controls";
 
 interface PlayerProps {
   url?: string;
-  renderType: "ascii" | "8bit";
 }
 
-export function Player({ url, renderType }: PlayerProps) {
+export function Player({ url }: PlayerProps) {
   const [isFullscreen, handleFullscreen] = useFullscreen();
 
-  const { play, pause, isPaused } = usePlayer(renderType);
+  const { play, pause, isPaused } = usePlayer();
 
   const handlePlay = async () => {
     if (isPaused) play();
@@ -80,7 +79,10 @@ export function Player({ url, renderType }: PlayerProps) {
             }}
             preload="metadata"
           />
-          <canvas id="canvas" style={{ width: "100%", height: "100%" }} />
+          <canvas
+            id="canvas"
+            style={{ width: "100%", height: "100%", backgroundColor: "#000" }}
+          />
         </div>
         <Controls
           onPlay={handlePlay}
